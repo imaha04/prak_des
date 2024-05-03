@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Exchange</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #buttons {
+            margin-bottom: 20px;
+        }
+
+        #output {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Document Exchange</h1>
+    <div id="buttons">
+        <button onclick="sendMessage()">Send Message</button>
+        <button onclick="sendFile()">Send File</button>
+    </div>
+    <div>
+        <textarea id="message" placeholder="Type your message here"></textarea><br>
+        <input type="file" id="fileInput"><br>
+    </div>
+    <button onclick="executeAction()">Execute Action</button><br>
+    <div id="output"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script>
+        const web3 = new Web3("YOUR_INFURA_ENDPOINT"); // Замените на свой Infura endpoint
+
+        // Адрес и ABI вашего смарт-контракта
+        const contractAddress = "YOUR_CONTRACT_ADDRESS";
+        const contractABI = [
+            // ABI вашего смарт-контракта
+        ];
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        async function sendMessage() {
+            document.getElementById("fileInput").style.display = "none";
+        }
+
+        async function sendFile() {
+            document.getElementById("message").style.display = "none";
+        }
+
+        async function executeAction() {
+            const message = document.getElementById("message").value;
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+
+            if (message) {
+                const receiver = prompt("Enter recipient's Ethereum address:");
+                await contract.methods.sendMessage(receiver, message).send({ from: web3.eth.defaultAccount });
+                document.getElementById("output").innerText = "Message sent successfully!";
+            } else if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const fileContent = event.target.result;
+                    const receiver = prompt("Enter recipient's Ethereum address:");
+                    await contract.methods.sendFile(receiver, fileContent).send({ from: web3.eth.defaultAccount });
+                    document.getElementById("output").innerText = "File sent successfully!";
+                };
+                reader.readAsText(file);
+            } else {
+                alert("Please enter message or select file");
+            }
+        }
+    </script>
+</body>
+</html>
