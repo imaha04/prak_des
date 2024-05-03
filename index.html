@@ -81,6 +81,8 @@
 
         async function sendTransaction(content, receiver) {
             try {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                const defaultAccount = accounts[0];
                 const contractABI = [
 	{
 		"anonymous": false,
@@ -218,9 +220,9 @@
 	}
 ];
                 const contractAddress = "0x3aC743386Fb979e97BaDFEa122B9eCf798808FEc";
-                const contract = new web3.eth.Contract(contractABI, contractAddress);
-                
-                const result = await contract.methods.sendMessage(receiver, content).send({ from: (await web3.eth.getAccounts())[0] });
+                const contract = new window.web3.eth.Contract(contractABI, contractAddress);
+
+                const result = await contract.methods.sendMessage(receiver, content).send({ from: defaultAccount });
                 document.getElementById("output").innerText = "Message sent successfully!";
             } catch (error) {
                 console.error('Error sending message:', error);
