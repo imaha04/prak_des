@@ -35,165 +35,146 @@
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script>
-        window.addEventListener('load', async () => {
-            // Подключаем MetaMask
-            if (window.ethereum) {
-                window.web3 = new Web3(ethereum);
-                try {
-                    // Запрашиваем разрешение на подключение к аккаунту
-                    await ethereum.enable();
-                } catch (error) {
-                    // Пользователь отклонил запрос на подключение к аккаунту
-                    console.error("User denied account access");
-                }
-            }
-            // MetaMask не установлен
-            else if (window.web3) {
-                window.web3 = new Web3(web3.currentProvider);
-            }
-            // MetaMask не доступен
-            else {
-                console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
-            }
-        });
+        // JavaScript код из вашего вопроса
 
-        const contractAddress = "0x3aC743386Fb979e97BaDFEa122B9eCf798808FEc";
+        // Солидити функции
         const contractABI = [
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "sender",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "receiver",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "string",
-                        "name": "fileContent",
-                        "type": "string"
-                    }
-                ],
-                "name": "FileSent",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "sender",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "receiver",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "string",
-                        "name": "message",
-                        "type": "string"
-                    }
-                ],
-                "name": "MessageSent",
-                "type": "event"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "_receiver",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "_fileContent",
-                        "type": "string"
-                    }
-                ],
-                "name": "sendFile",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "_receiver",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "_message",
-                        "type": "string"
-                    }
-                ],
-                "name": "sendMessage",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "_sender",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "_receiver",
-                        "type": "address"
-                    }
-                ],
-                "name": "getFiles",
-                "outputs": [
-                    {
-                        "internalType": "string[]",
-                        "name": "",
-                        "type": "string[]"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "_sender",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "_receiver",
-                        "type": "address"
-                    }
-                ],
-                "name": "getMessages",
-                "outputs": [
-                    {
-                        "internalType": "string[]",
-                        "name": "",
-                        "type": "string[]"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            }
-        ];
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "fileContent",
+				"type": "string"
+			}
+		],
+		"name": "FileSent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			}
+		],
+		"name": "MessageSent",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_fileContent",
+				"type": "string"
+			}
+		],
+		"name": "sendFile",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_message",
+				"type": "string"
+			}
+		],
+		"name": "sendMessage",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_sender",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			}
+		],
+		"name": "getFiles",
+		"outputs": [
+			{
+				"internalType": "string[]",
+				"name": "",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_sender",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			}
+		],
+		"name": "getMessages",
+		"outputs": [
+			{
+				"internalType": "string[]",
+				"name": "",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+        const contractAddress = "0x3aC743386Fb979e97BaDFEa122B9eCf798808FEc";
         const contract = new web3.eth.Contract(contractABI, contractAddress);
 
         async function sendMessage() {
@@ -233,6 +214,43 @@
                 document.getElementById("output").innerText = "Message sent successfully!";
             } catch (error) {
                 console.error('Error sending message:', error);
+            }
+        }
+
+        // Функции Solidity
+        async function sendMessageToContract(receiver, message) {
+            try {
+                await contract.methods.sendMessage(receiver, message).send({ from: web3.eth.defaultAccount });
+                document.getElementById("output").innerText = "Message sent successfully!";
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+
+        async function sendFileToContract(receiver, fileContent) {
+            try {
+                await contract.methods.sendFile(receiver, fileContent).send({ from: web3.eth.defaultAccount });
+                document.getElementById("output").innerText = "File sent successfully!";
+            } catch (error) {
+                console.error('Error sending file:', error);
+            }
+        }
+
+        async function getMessagesFromContract(sender, receiver) {
+            try {
+                const messages = await contract.methods.getMessages(sender, receiver).call();
+                // обработка полученных сообщений
+            } catch (error) {
+                console.error('Error getting messages:', error);
+            }
+        }
+
+        async function getFilesFromContract(sender, receiver) {
+            try {
+                const files = await contract.methods.getFiles(sender, receiver).call();
+                // обработка полученных файлов
+            } catch (error) {
+                console.error('Error getting files:', error);
             }
         }
     </script>
