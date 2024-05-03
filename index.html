@@ -222,7 +222,13 @@
                 const contractAddress = "0x3aC743386Fb979e97BaDFEa122B9eCf798808FEc";
                 const contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
+                // Отправка транзакции из аккаунта MetaMask 
                 const result = await contract.methods.sendMessage(receiver, content).send({ from: defaultAccount });
+                console.log('Message sent successfully:', result);
+
+                // Ожидание завершения транзакции 
+                const receipt = await window.web3.eth.getTransactionReceipt(result.transactionHash);
+
                 document.getElementById("output").innerText = "Message sent successfully!";
             } catch (error) {
                 console.error('Error sending message:', error);
