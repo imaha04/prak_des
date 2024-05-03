@@ -35,10 +35,53 @@
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script>
-        // JavaScript код из вашего вопроса
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                window.web3 = new Web3(ethereum);
+                try {
+                    await ethereum.request({ method: 'eth_requestAccounts' });
+                } catch (error) {
+                    console.error("User denied account access");
+                }
+            } else {
+                console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+            }
+        });
 
-        // Солидити функции
-        const contractABI = [
+        async function sendMessage() {
+            document.getElementById("fileInput").style.display = "none";
+            document.getElementById("message").style.display = "block";
+        }
+
+        async function sendFile() {
+            document.getElementById("message").style.display = "none";
+            document.getElementById("fileInput").style.display = "block";
+        }
+
+        async function executeAction() {
+            const message = document.getElementById("message").value;
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+
+            if (message) {
+                const receiver = prompt("Enter recipient's Ethereum address:");
+                await sendTransaction(message, receiver);
+            } else if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const fileContent = event.target.result;
+                    const receiver = prompt("Enter recipient's Ethereum address:");
+                    await sendTransaction(fileContent, receiver);
+                };
+                reader.readAsText(file);
+            } else {
+                alert("Please enter message or select file");
+            }
+        }
+
+        async function sendTransaction(content, receiver) {
+            try {
+                const contractABI = [
 	{
 		"anonymous": false,
 		"inputs": [
@@ -174,83 +217,13 @@
 		"type": "function"
 	}
 ];
-        const contractAddress = "0x3aC743386Fb979e97BaDFEa122B9eCf798808FEc";
-        const contract = new web3.eth.Contract(contractABI, contractAddress);
-
-        async function sendMessage() {
-            document.getElementById("fileInput").style.display = "none";
-            document.getElementById("message").style.display = "block";
-        }
-
-        async function sendFile() {
-            document.getElementById("message").style.display = "none";
-            document.getElementById("fileInput").style.display = "block";
-        }
-
-        async function executeAction() {
-            const message = document.getElementById("message").value;
-            const fileInput = document.getElementById("fileInput");
-            const file = fileInput.files[0];
-
-            if (message) {
-                const receiver = prompt("Enter recipient's Ethereum address:");
-                await sendTransaction(message, receiver);
-            } else if (file) {
-                const reader = new FileReader();
-                reader.onload = async function(event) {
-                    const fileContent = event.target.result;
-                    const receiver = prompt("Enter recipient's Ethereum address:");
-                    await sendTransaction(fileContent, receiver);
-                };
-                reader.readAsText(file);
-            } else {
-                alert("Please enter message or select file");
-            }
-        }
-
-        async function sendTransaction(content, receiver) {
-            try {
-                const result = await contract.methods.sendMessage(receiver, content).send({ from: web3.eth.defaultAccount });
+                const contractAddress = "0x3aC743386Fb979e97BaDFEa122B9eCf798808FEc";
+                const contract = new web3.eth.Contract(contractABI, contractAddress);
+                
+                const result = await contract.methods.sendMessage(receiver, content).send({ from: (await web3.eth.getAccounts())[0] });
                 document.getElementById("output").innerText = "Message sent successfully!";
             } catch (error) {
                 console.error('Error sending message:', error);
-            }
-        }
-
-        // Функции Solidity
-        async function sendMessageToContract(receiver, message) {
-            try {
-                await contract.methods.sendMessage(receiver, message).send({ from: web3.eth.defaultAccount });
-                document.getElementById("output").innerText = "Message sent successfully!";
-            } catch (error) {
-                console.error('Error sending message:', error);
-            }
-        }
-
-        async function sendFileToContract(receiver, fileContent) {
-            try {
-                await contract.methods.sendFile(receiver, fileContent).send({ from: web3.eth.defaultAccount });
-                document.getElementById("output").innerText = "File sent successfully!";
-            } catch (error) {
-                console.error('Error sending file:', error);
-            }
-        }
-
-        async function getMessagesFromContract(sender, receiver) {
-            try {
-                const messages = await contract.methods.getMessages(sender, receiver).call();
-                // обработка полученных сообщений
-            } catch (error) {
-                console.error('Error getting messages:', error);
-            }
-        }
-
-        async function getFilesFromContract(sender, receiver) {
-            try {
-                const files = await contract.methods.getFiles(sender, receiver).call();
-                // обработка полученных файлов
-            } catch (error) {
-                console.error('Error getting files:', error);
             }
         }
     </script>
