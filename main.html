@@ -35,21 +35,175 @@
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script>
-        const web3 = new Web3("YOUR_INFURA_ENDPOINT"); // Замените на свой Infura endpoint
+        window.addEventListener('load', async () => {
+            // Подключаем MetaMask
+            if (window.ethereum) {
+                window.web3 = new Web3(ethereum);
+                try {
+                    // Запрашиваем разрешение на подключение к аккаунту
+                    await ethereum.enable();
+                } catch (error) {
+                    // Пользователь отклонил запрос на подключение к аккаунту
+                    console.error("User denied account access");
+                }
+            }
+            // MetaMask не установлен
+            else if (window.web3) {
+                window.web3 = new Web3(web3.currentProvider);
+            }
+            // MetaMask не доступен
+            else {
+                console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+            }
+        });
 
-        // Адрес и ABI вашего смарт-контракта
-        const contractAddress = "YOUR_CONTRACT_ADDRESS";
+        const contractAddress = "0x51A59fb382EC1F48A17197AB5e84Ca1B88c30c7F";
         const contractABI = [
-            // ABI вашего смарт-контракта
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "receiver",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "fileContent",
+                        "type": "string"
+                    }
+                ],
+                "name": "FileSent",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "receiver",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "message",
+                        "type": "string"
+                    }
+                ],
+                "name": "MessageSent",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_receiver",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_fileContent",
+                        "type": "string"
+                    }
+                ],
+                "name": "sendFile",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_receiver",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_message",
+                        "type": "string"
+                    }
+                ],
+                "name": "sendMessage",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_sender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_receiver",
+                        "type": "address"
+                    }
+                ],
+                "name": "getFiles",
+                "outputs": [
+                    {
+                        "internalType": "string[]",
+                        "name": "",
+                        "type": "string[]"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_sender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_receiver",
+                        "type": "address"
+                    }
+                ],
+                "name": "getMessages",
+                "outputs": [
+                    {
+                        "internalType": "string[]",
+                        "name": "",
+                        "type": "string[]"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
         ];
         const contract = new web3.eth.Contract(contractABI, contractAddress);
 
         async function sendMessage() {
             document.getElementById("fileInput").style.display = "none";
+            document.getElementById("message").style.display = "block";
         }
 
         async function sendFile() {
             document.getElementById("message").style.display = "none";
+            document.getElementById("fileInput").style.display = "block";
         }
 
         async function executeAction() {
@@ -59,19 +213,26 @@
 
             if (message) {
                 const receiver = prompt("Enter recipient's Ethereum address:");
-                await contract.methods.sendMessage(receiver, message).send({ from: web3.eth.defaultAccount });
-                document.getElementById("output").innerText = "Message sent successfully!";
+                await sendTransaction(message, receiver);
             } else if (file) {
                 const reader = new FileReader();
                 reader.onload = async function(event) {
                     const fileContent = event.target.result;
                     const receiver = prompt("Enter recipient's Ethereum address:");
-                    await contract.methods.sendFile(receiver, fileContent).send({ from: web3.eth.defaultAccount });
-                    document.getElementById("output").innerText = "File sent successfully!";
+                    await sendTransaction(fileContent, receiver);
                 };
                 reader.readAsText(file);
             } else {
                 alert("Please enter message or select file");
+            }
+        }
+
+        async function sendTransaction(content, receiver) {
+            try {
+                const result = await contract.methods.sendMessage(receiver, content).send({ from: web3.eth.defaultAccount });
+                document.getElementById("output").innerText = "Message sent successfully!";
+            } catch (error) {
+                console.error('Error sending message:', error);
             }
         }
     </script>
