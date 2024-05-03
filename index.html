@@ -3,237 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Exchange</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        #buttons {
-            margin-bottom: 20px;
-        }
-
-        #output {
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
-    </style>
+    <title>Service Marketplace</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 </head>
 <body>
-    <h1>Document Exchange</h1>
-    <div id="buttons">
-        <button onclick="sendMessage()">Send Message</button>
-        <button onclick="sendFile()">Send File</button>
-    </div>
-    <div>
-        <textarea id="message" placeholder="Type your message here"></textarea><br>
-        <input type="file" id="fileInput"><br>
-    </div>
-    <button onclick="executeAction()">Execute Action</button><br>
+    <h1>Service Marketplace</h1>
+    <p>Seller: <span id="sellerAddress"></span></p>
+    <p>Price: <span id="price"></span> ETH</p>
+    <button onclick="connectMetaMask()">Connect MetaMask</button>
+    <button onclick="pay()">Pay</button>
+    <button onclick="sendFile()">Send File</button>
+    <button onclick="releaseFunds()">Release Funds</button>
     <div id="output"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script>
-        window.addEventListener('load', async () => {
+        let accounts;
+
+        // Установка Web3.js с использованием MetaMask
+        async function connectMetaMask() {
             if (window.ethereum) {
                 window.web3 = new Web3(ethereum);
                 try {
-                    await ethereum.request({ method: 'eth_requestAccounts' });
+                    accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    alert("MetaMask connected!");
                 } catch (error) {
                     console.error("User denied account access");
                 }
             } else {
                 console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
             }
-        });
-
-        async function sendMessage() {
-            document.getElementById("fileInput").style.display = "none";
-            document.getElementById("message").style.display = "block";
         }
 
-        async function sendFile() {
-            document.getElementById("message").style.display = "none";
-            document.getElementById("fileInput").style.display = "block";
+        // Адрес и ABI контракта
+        const contractAddress = '0x...'; // Замените на адрес вашего контракта
+        const contractABI = [ /* Замените на ABI вашего контракта */ ];
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        // Получение информации о контракте
+        async function loadContractInfo() {
+            const sellerAddress = await contract.methods.seller().call();
+            const price = await contract.methods.price().call();
+            document.getElementById("sellerAddress").innerText = sellerAddress;
+            document.getElementById("price").innerText = price;
         }
 
-        async function executeAction() {
-            const message = document.getElementById("message").value;
-            const fileInput = document.getElementById("fileInput");
-            const file = fileInput.files[0];
-
-            if (message) {
-                const receiver = prompt("Enter recipient's Ethereum address:");
-                await sendTransaction(message, receiver);
-            } else if (file) {
-                const reader = new FileReader();
-                reader.onload = async function(event) {
-                    const fileContent = event.target.result;
-                    const receiver = prompt("Enter recipient's Ethereum address:");
-                    await sendTransaction(fileContent, receiver);
-                };
-                reader.readAsText(file);
-            } else {
-                alert("Please enter message or select file");
-            }
-        }
-
-        async function sendTransaction(content, receiver) {
+        // Функция отправки транзакции из MetaMask кошелька
+        async function sendTransaction(method, ...args) {
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                const defaultAccount = accounts[0];
-                const contractABI = [
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "receiver",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "fileContent",
-				"type": "string"
-			}
-		],
-		"name": "FileSent",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "receiver",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "message",
-				"type": "string"
-			}
-		],
-		"name": "MessageSent",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_receiver",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_fileContent",
-				"type": "string"
-			}
-		],
-		"name": "sendFile",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_receiver",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_message",
-				"type": "string"
-			}
-		],
-		"name": "sendMessage",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_sender",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_receiver",
-				"type": "address"
-			}
-		],
-		"name": "getFiles",
-		"outputs": [
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_sender",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_receiver",
-				"type": "address"
-			}
-		],
-		"name": "getMessages",
-		"outputs": [
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-];
-                const contractAddress = "0x3aC743386Fb979e97BaDFEa122B9eCf798808FEc";
-                const contract = new window.web3.eth.Contract(contractABI, contractAddress);
-
-                // Отправка транзакции из аккаунта MetaMask 
-                const result = await contract.methods.sendMessage(receiver, content).send({ from: defaultAccount });
-                console.log('Message sent successfully:', result);
-
-                // Ожидание завершения транзакции 
-                const receipt = await window.web3.eth.getTransactionReceipt(result.transactionHash);
-
-                document.getElementById("output").innerText = "Message sent successfully!";
+                const result = await method.send({ from: accounts[0] });
+                return result.transactionHash;
             } catch (error) {
-                console.error('Error sending message:', error);
+                console.error('Transaction error:', error);
+                return null;
             }
         }
+
+        // Функция ожидания ответа транзакции
+        async function waitForTransaction(transactionHash) {
+            const receipt = await web3.eth.getTransactionReceipt(transactionHash);
+            return receipt !== null;
+        }
+
+        // Функция вывода сообщения о результате транзакции
+        function showMessage(message) {
+            document.getElementById("output").innerText = message;
+        }
+
+        // Функция оплаты услуги
+        async function pay() {
+            const price = await contract.methods.price().call();
+            const transactionHash = await sendTransaction(contract.methods.pay(), { value: price });
+            if (transactionHash !== null) {
+                const success = await waitForTransaction(transactionHash);
+                if (success) {
+                    showMessage("Payment successful!");
+                } else {
+                    showMessage("Payment failed.");
+                }
+            }
+        }
+
+        // Функция отправки файла
+        async function sendFile() {
+            const transactionHash = await sendTransaction(contract.methods.sendFile());
+            if (transactionHash !== null) {
+                const success = await waitForTransaction(transactionHash);
+                if (success) {
+                    showMessage("File sent successfully!");
+                } else {
+                    showMessage("Sending file failed.");
+                }
+            }
+        }
+
+        // Функция освобождения средств
+        async function releaseFunds() {
+            const transactionHash = await sendTransaction(contract.methods.releaseFunds());
+            if (transactionHash !== null) {
+                const success = await waitForTransaction(transactionHash);
+                if (success) {
+                    showMessage("Funds released successfully!");
+                } else {
+                    showMessage("Releasing funds failed.");
+                }
+            }
+        }
+
+        // Загрузка информации о контракте при загрузке страницы
+        loadContractInfo();
     </script>
 </body>
 </html>
