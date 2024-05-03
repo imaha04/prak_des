@@ -10,6 +10,7 @@
     <h1>Service Marketplace</h1>
     <p>Seller: <span id="sellerAddress"></span></p>
     <p>Price: <span id="price"></span> ETH</p>
+    <p>Your Address: <span id="userAddress"></span></p>
     <button onclick="connectMetaMask()">Connect MetaMask</button>
     <button onclick="pay()">Pay</button>
     <button onclick="sendFile()">Send File</button>
@@ -28,6 +29,7 @@
                 try {
                     accounts = await ethereum.request({ method: 'eth_requestAccounts' });
                     alert("MetaMask connected!");
+                    document.getElementById("userAddress").innerText = accounts[0];
                 } catch (error) {
                     console.error("User denied account access");
                 }
