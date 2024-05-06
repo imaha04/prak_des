@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Marketplace</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
 </head>
 <body>
     <h1>Service Marketplace</h1>
-    <p>Seller: <span id="sellerAddress"></span></p>
+    <p>Seller: <input type="text" id="sellerWallet" placeholder="Enter seller's wallet address"></p>
     <p>Price: <span id="price"></span> ETH</p>
-    <p>Your Address: <span id="userAddress"></span></p>
+    <p>Balance: <span id="balance">0</span> ETH</p>
     <button onclick="connectMetaMask()">Connect MetaMask</button>
     <button onclick="pay()">Pay</button>
     <button onclick="sendFile()">Send File</button>
@@ -30,6 +30,7 @@
                     accounts = await ethereum.request({ method: 'eth_requestAccounts' });
                     alert("MetaMask connected!");
                     document.getElementById("userAddress").innerText = accounts[0];
+                    updateBalance();
                 } catch (error) {
                     console.error("User denied account access");
                 }
@@ -41,110 +42,7 @@
         // Адрес и ABI контракта
         const contractAddress = '0x8daC953ac14A6ffCb50736c6c908736FDc5C785E'; // Замените на адрес вашего контракта
         const contractABI = [
-            {
-                "inputs": [],
-                "name": "pay",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "releaseFunds",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "sendFile",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "_buyer",
-                        "type": "address"
-                    }
-                ],
-                "name": "setBuyer",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "_price",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "setPrice",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-            },
-            {
-                "inputs": [],
-                "name": "buyer",
-                "outputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "fileSent",
-                "outputs": [
-                    {
-                        "internalType": "bool",
-                        "name": "",
-                        "type": "bool"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "price",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "seller",
-                "outputs": [
-                    {
-                        "internalType": "address payable",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            }
+            // Ваш ABI
         ];
         const contract = new web3.eth.Contract(contractABI, contractAddress);
 
@@ -186,6 +84,7 @@
                 const success = await waitForTransaction(transactionHash);
                 if (success) {
                     showMessage("Payment successful!");
+                    updateBalance();
                 } else {
                     showMessage("Payment failed.");
                 }
@@ -238,6 +137,12 @@
                     showMessage("Releasing funds failed.");
                 }
             }
+        }
+
+        // Функция обновления баланса
+        async function updateBalance() {
+            const balance = await web3.eth.getBalance(accounts[0]);
+            document.getElementById("balance").innerText = web3.utils.fromWei(balance, 'ether');
         }
 
         // Загрузка информации о контракте при загрузке страницы
