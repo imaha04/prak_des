@@ -8,15 +8,12 @@
 </head>
 <body>
     <h1>Service Marketplace</h1>
-    <p>Seller: <input type="text" id="sellerWallet" placeholder="Enter seller's wallet address"></p>
-    <p>Price: <span id="price"></span> ETH</p>
-    <p>Balance: <span id="balance">0</span> ETH</p>
+    <p>Seller: <input type="text" id="sellerWallet" value="0x352c2E62066b72465800Dcf9B599aEA2B16aE85A" readonly></p>
+    <p>Price: <input type="text" id="price" value="0.01 tbnb" readonly></p>
     <button onclick="connectMetaMask()">Connect MetaMask</button>
-    <button onclick="downloadFile()">Download File</button>
-    <div>
-        <input type="file" id="fileInput">
-    </div>
-    <div id="output"></div>
+    <input type="file" id="fileInput" style="margin-top: 10px;"><br>
+    <p>Description: <input type="text" id="description"></p>
+    <button onclick="uploadFile()">Upload File</button>
     <script>
         let accounts;
 
@@ -27,7 +24,7 @@
                 try {
                     accounts = await ethereum.request({ method: 'eth_requestAccounts' });
                     alert("MetaMask connected!");
-                    document.getElementById("balance").innerText = await getBalance();
+                    document.getElementById("price").value = "0.01 tbnb";
                 } catch (error) {
                     console.error("User denied account access");
                 }
@@ -36,22 +33,26 @@
             }
         }
 
-        // Получение баланса кошелька MetaMask
-        async function getBalance() {
-            if (!accounts) return '0';
-            const balance = await web3.eth.getBalance(accounts[0]);
-            return web3.utils.fromWei(balance, 'ether');
-        }
-
         // Функция отправки файла
-        async function downloadFile() {
-            // Your code for downloading the file...
-            alert('File downloading functionality will be implemented here.');
-        }
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            const description = document.getElementById("description").value;
+            if (!file) {
+                alert("Please select a file.");
+                return;
+            }
 
-        // Функция вывода сообщения о результате
-        function showMessage(message) {
-            document.getElementById("output").innerText = message;
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("description", description);
+
+            try {
+                // Your code for uploading the file...
+                alert('File uploading functionality will be implemented here.');
+            } catch (error) {
+                console.error("Error:", error);
+            }
         }
     </script>
 </body>
