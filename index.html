@@ -12,9 +12,7 @@
     <p>Price: <span id="price"></span> ETH</p>
     <p>Balance: <span id="balance">0</span> ETH</p>
     <button onclick="connectMetaMask()">Connect MetaMask</button>
-    <button onclick="pay()">Pay</button>
-    <button onclick="sendFile()">Send File</button>
-    <button onclick="releaseFunds()">Release Funds</button>
+    <button onclick="downloadFile()">Download File</button>
     <div>
         <input type="file" id="fileInput">
     </div>
@@ -29,8 +27,7 @@
                 try {
                     accounts = await ethereum.request({ method: 'eth_requestAccounts' });
                     alert("MetaMask connected!");
-                    document.getElementById("userAddress").innerText = accounts[0];
-                    updateBalance();
+                    document.getElementById("balance").innerText = await getBalance();
                 } catch (error) {
                     console.error("User denied account access");
                 }
@@ -39,114 +36,23 @@
             }
         }
 
-        // Адрес и ABI контракта
-        const contractAddress = '0x8daC953ac14A6ffCb50736c6c908736FDc5C785E'; // Замените на адрес вашего контракта
-        const contractABI = [
-            // Ваш ABI
-        ];
-        const contract = new web3.eth.Contract(contractABI, contractAddress);
-
-        // Получение информации о контракте
-        async function loadContractInfo() {
-            const sellerAddress = await contract.methods.seller().call();
-            const price = await contract.methods.price().call();
-            document.getElementById("sellerAddress").innerText = sellerAddress;
-            document.getElementById("price").innerText = price;
-        }
-
-        // Функция отправки транзакции из MetaMask кошелька
-        async function sendTransaction(method, ...args) {
-            try {
-                const result = await method.send({ from: accounts[0] });
-                return result.transactionHash;
-            } catch (error) {
-                console.error('Transaction error:', error);
-                return null;
-            }
-        }
-
-        // Функция ожидания ответа транзакции
-        async function waitForTransaction(transactionHash) {
-            const receipt = await web3.eth.getTransactionReceipt(transactionHash);
-            return receipt !== null;
-        }
-
-        // Функция вывода сообщения о результате транзакции
-        function showMessage(message) {
-            document.getElementById("output").innerText = message;
-        }
-
-        // Функция оплаты услуги
-        async function pay() {
-            const price = await contract.methods.price().call();
-            const transactionHash = await sendTransaction(contract.methods.pay(), { value: price });
-            if (transactionHash !== null) {
-                const success = await waitForTransaction(transactionHash);
-                if (success) {
-                    showMessage("Payment successful!");
-                    updateBalance();
-                } else {
-                    showMessage("Payment failed.");
-                }
-            }
+        // Получение баланса кошелька MetaMask
+        async function getBalance() {
+            if (!accounts) return '0';
+            const balance = await web3.eth.getBalance(accounts[0]);
+            return web3.utils.fromWei(balance, 'ether');
         }
 
         // Функция отправки файла
-        async function sendFile() {
-            const fileInput = document.getElementById("fileInput");
-            const file = fileInput.files[0];
-            if (!file) {
-                alert("Please select a file.");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            try {
-                const response = await fetch("your_file_upload_endpoint", {
-                    method: "POST",
-                    body: formData,
-                });
-                if (response.ok) {
-                    const transactionHash = await sendTransaction(contract.methods.sendFile());
-                    if (transactionHash !== null) {
-                        const success = await waitForTransaction(transactionHash);
-                        if (success) {
-                            showMessage("File sent successfully!");
-                        } else {
-                            showMessage("Sending file failed.");
-                        }
-                    }
-                } else {
-                    showMessage("Error uploading file.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-            }
+        async function downloadFile() {
+            // Your code for downloading the file...
+            alert('File downloading functionality will be implemented here.');
         }
 
-        // Функция освобождения средств
-        async function releaseFunds() {
-            const transactionHash = await sendTransaction(contract.methods.releaseFunds());
-            if (transactionHash !== null) {
-                const success = await waitForTransaction(transactionHash);
-                if (success) {
-                    showMessage("Funds released successfully!");
-                } else {
-                    showMessage("Releasing funds failed.");
-                }
-            }
+        // Функция вывода сообщения о результате
+        function showMessage(message) {
+            document.getElementById("output").innerText = message;
         }
-
-        // Функция обновления баланса
-        async function updateBalance() {
-            const balance = await web3.eth.getBalance(accounts[0]);
-            document.getElementById("balance").innerText = web3.utils.fromWei(balance, 'ether');
-        }
-
-        // Загрузка информации о контракте при загрузке страницы
-        loadContractInfo();
     </script>
 </body>
 </html>
